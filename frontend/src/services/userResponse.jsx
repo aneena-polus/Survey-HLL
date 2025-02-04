@@ -1,53 +1,53 @@
-import axios from 'axios';
+import axiosInstance from "../config/axiosConfig";
 
 export const getSurveyList = (userRole) => {
-    return axios.get(`http://10.199.100.26:8000/api/getSurveyFormList`);
+    return axiosInstance.get(`api/auth/getSurveyFormList`);
 };
 
 export const getSurveyQuestionsById = (data) => {
-    return axios.post(`http://10.199.100.137:3000/getSurveyData`, data);
+    return axiosInstance.post(`http://10.199.100.137:3000/getSurveyData`, data);
 };
 
 export const getmyformlist = () => {
-    return axios.get(`http://10.199.100.137:3000/getSurveyList/${1}`);
+    return axiosInstance.get(`http://10.199.100.137:3000/getSurveyList/${1}`);
 };
 
 export const getOptionTypes = () => {
-    return axios.get(`http://10.199.100.26:8000/api/getanswerTypes`);
+    return axiosInstance.get(`api/auth/getanswerTypes`);
 };
 
 export const saveSurveyTitles = (data) => {
-    return axios.post(`http://10.199.100.26:8000/api/saveSurveyForm`, data);
+    return axiosInstance.post(`api/auth/saveSurveyForm`, data);
 };
 
 export const saveSurveyQuestion = (data) => {
-    return axios.post(`http://10.199.100.26:8000/api/saveQuestion`, data);
+    return axiosInstance.post(`api/auth/saveQuestion`, data);
 };
 
 export const deleteSurveyQuestion = (index) => {
-    return axios.delete(`http://10.199.100.26:8000/api/removeQuestion/${index}`);
+    return axiosInstance.delete(`api/auth/removeQuestion/${index}`);
 };
 
 export const changeStatusSurvey = (surveyId, status) => {
-    return axios.post(`http://10.199.100.26:8000/api/publishSurvey/${surveyId}`, { status: status });
+    return axiosInstance.post(`api/auth/publishSurvey/${surveyId}`, { status: status });
 };
 
 export const getPublishedSurveyList = () => {
-    return axios.get(`http://10.199.100.26:8000/api/getPublishedSurveys`);
+    return axiosInstance.get(`api/auth/getPublishedSurveys`);
 };
 
 export const getQuestionsById = (survey_id) => {
-    return axios.get(`http://10.199.100.26:8000/api/getAllQuestionBySurveyId/${survey_id}`);
+    return axiosInstance.get(`api/auth/getAllQuestionBySurveyId/${survey_id}`);
 };
 
 export const editSurveyQuestion = (questionId, question) => {
-    return axios.put(`http://10.199.100.26:8000/api/updateQuestion/${questionId}`, question);
+    return axiosInstance.put(`api/auth/updateQuestion/${questionId}`, question);
 };
 
 export const submitResponse = (response) => {
-    return axios.post(`http://10.199.100.26:8000/api/saveSurveyAnswers`, response);
+    return axiosInstance.post(`api/auth/saveSurveyAnswers`, response);
 };
 
 export const editTitleSave = (response) => {
-    return axios.put(`http://10.199.100.26:8000/api/updateSurveyTitle`, response);
+    return axiosInstance.put(`api/auth/updateSurveyTitle`, response);
 };
