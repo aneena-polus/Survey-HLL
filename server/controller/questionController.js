@@ -21,7 +21,7 @@ const answerTypes = async (req, res) => {
     }
 
     const answerTypeIds = answerTypesResults
-      .filter(at => at.TYPE === 'checkbox' || at.TYPE === 'dropdown')
+      .filter(at => at.TYPE === 'checkbox' || at.TYPE === 'dropdown' || at.TYPE === 'radio')
       .map(at => at.ID);
 
     let lookupValues = [];
@@ -86,6 +86,8 @@ const saveQuestion = (req, res) => {
         console.error('Error saving question:', err);
         return res.status(500).json({ error: 'Failed to save question' });
       }
+      console.log(result);
+      
 
       const questionId = result.insertId;
       const savedQuestion = {
