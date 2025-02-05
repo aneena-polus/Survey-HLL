@@ -4,6 +4,11 @@ const saveSurveyForm = async (req, res) => {
     try {
         const { title, created_by } = req.body
 
+        if (!created_by) {
+            console.error('Missing created_by in request body');
+            return res.status(400).json({ error: 'created_by is required' });
+        }
+
         const checkPerson = 'SELECT PERSON_ID, ROLE FROM person WHERE PERSON_ID = ?'
         connection.query(checkPerson, [created_by], (err, result) => {
             if (err) {
@@ -73,17 +78,21 @@ const updateSurveyTitle = async (req, res) => {
 
 
 const getSurveyFormList = async (req, res) => {
-    console.log("req",req)
     try {
+
+        const userId = req.user.userId;
+        console.log("User from request:", req.user);
+
         
         const query = `
             SELECT s.ID, s.TITLE, s.CREATED_BY, s.UPDATE_TIMESTAMP, s.STATUS, p.USERNAME AS UPDATE_PERSON
             FROM survey s
             JOIN survey_question sq ON s.ID = sq.SURVEY_ID
             LEFT JOIN person p ON s.UPDATE_PERSON = p.PERSON_ID
+             WHERE s.CREATED_BY = ? 
             GROUP BY s.ID
         `;
-        connection.query(query, (err, results) => {
+        connection.query(query,[userId], (err, results) => {
             if (err) {
                 console.error('Error fetching survey forms:', err);
                 return res.status(500).json({ error: 'Failed to fetch survey forms' });
