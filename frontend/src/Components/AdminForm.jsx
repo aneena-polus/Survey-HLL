@@ -14,8 +14,8 @@ import AlertDialogModal from '../common/Confirmation';
 function AdminForm() {
     const { userData } = useContext(AuthContext);
     const dispatch = useDispatch();
-    const [surveyDetails, setSurveyDetails] = useState([]);
     const questions = useSelector(state => state.questions.questions || []);
+    const [surveyDetails, setSurveyDetails] = useState([]);
     const [title, setTitle] = useState('');
     const [nextFlag, setNextFlag] = useState(0);
     const [resetTrigger, setResetTrigger] = useState(false);
@@ -32,7 +32,7 @@ function AdminForm() {
     const saveSurveyTitle = () => {
         const saveTitleObj = {
             title: title,
-            created_by: userData.id
+            created_by: userData.userId
         };
         if (!saveTitleObj.title) {
             setErrors({ title: '*Title is required' });
@@ -100,12 +100,7 @@ function AdminForm() {
                 ToastMessage('Question Added Successfully!');
             });
         }
-        setNewQuestion('');
-        setIsMandatory("F");
-        setEditQuestionId(null);
-        setQuestionType('');
-        setLookupType('');
-        setErrors({});
+        resetValues();
         setResetTrigger(prev => !prev);
     };
 
@@ -128,7 +123,7 @@ function AdminForm() {
         dispatch(resetQuestions());
     };
 
-    const handleCancelEdit = () => {
+    const resetValues = () => {
         setErrors({});
         setNewQuestion('');
         setIsMandatory("F");
@@ -168,13 +163,12 @@ function AdminForm() {
                                     variant="standard" className='mb-2'
                                 />
                                 <ChoiceSelect questionType={questionType} lookupType={lookupType} setQuestionType={setQuestionType} setLookupType={setLookupType} errors={errors} resetTrigger={resetTrigger} />
-                                <FormControlLabel
-                                    control={<Checkbox checked={isMandatory === "T"} onChange={(e) => setIsMandatory(e.target.checked ? "T" : "F")} />}
+                                <FormControlLabel control={<Checkbox checked={isMandatory === "T"} onChange={(e) => setIsMandatory(e.target.checked ? "T" : "F")} />}
                                     label="Is Mandatory?"
                                 />
                                 <Box textAlign="right">
                                     {editQuestionId &&
-                                        (<Button variant="outlined" color="success" onClick={handleCancelEdit} sx={{ mr: 1 }}>
+                                        (<Button variant="outlined" color="success" onClick={resetValues} sx={{ mr: 1 }}>
                                             Cancel
                                         </Button>)}
                                     <Button variant="contained" color="success" onClick={handleAddQuestion}>

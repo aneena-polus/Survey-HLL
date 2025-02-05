@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { changeStatusSurvey, getmyformlist, getPublishedSurveyList, getSurveyList } from '../services/userResponse';
+import { changeStatusSurvey, getmyformlist, getSurveyList } from '../services/userResponse';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, IconButton, 
     Typography, Switch, Tooltip } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -27,7 +27,8 @@ function UserView() {
             getSurveyList(userData.role)
                 .then((response) => setRows(response.data.surveys))
                 .catch((err) => console.log(err));
-        } else {
+        } 
+        else if(userData.role == '2') {
             getmyformlist()
                 .then((response) => setRows(response.data))
                 .catch((err) => console.log(err));

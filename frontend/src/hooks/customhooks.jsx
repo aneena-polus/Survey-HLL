@@ -14,7 +14,7 @@ const useSurveyForm = () => {
     useEffect(() => {
         const response = {
             id: data.survey_details.ID,
-            user_id: userData.id
+            user_id: userData.userId
         }
         getSurveyQuestionsById(response)
             .then((response) => {
@@ -31,7 +31,7 @@ const useSurveyForm = () => {
                 console.error(err);
                 navigate('/')
             });
-    }, [data.survey_details.ID, userData.id, navigate]);
+    }, [data.survey_details.ID, userData.userId, navigate]);
 
     const handleResponseChange = (index, questionId, answer) => {
         const updatedResponses = [...responseData];

@@ -5,11 +5,11 @@ export const getSurveyList = (userRole) => {
 };
 
 export const getSurveyQuestionsById = (data) => {
-    return axiosInstance.post(`http://10.199.100.137:3000/getSurveyData`, data);
+    return axiosInstance.post(`api/auth/getSurveyData`, data);
 };
 
 export const getmyformlist = () => {
-    return axiosInstance.get(`http://10.199.100.137:3000/getSurveyList/${1}`);
+    return axiosInstance.get(`api/auth/getSurveyList/${1}`);
 };
 
 export const getOptionTypes = () => {

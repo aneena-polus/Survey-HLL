@@ -1,11 +1,11 @@
 import { connection } from "../config/connection.js";
 
 export const getSurveyList = async (req, res) => {
-    const { userRole } = req.params;
+    const { status } = req.params;
     const query = `
         SELECT * FROM survey sur LEFT JOIN person per ON 
         sur.UPDATE_PERSON = per.PERSON_ID where STATUS = ?`;
-    connection.query(query, [userRole], (err, results) => {
+    connection.query(query, [status], (err, results) => {
         if (err) throw err;
         const responseData = results.map(item => ({
             ID: item.ID,
