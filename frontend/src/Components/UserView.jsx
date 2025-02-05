@@ -23,7 +23,7 @@ function UserView() {
         if (storedUserData) {
             setUserData(JSON.parse(storedUserData)); 
         }
-        if (userData.role === '1') {
+        if (userData.role == '1') {
             getSurveyList(userData.role)
                 .then((response) => setRows(response.data.surveys))
                 .catch((err) => console.log(err));

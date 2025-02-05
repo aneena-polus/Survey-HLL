@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSurveyForm from '../hooks/customhooks';
 import InputRenderer from './InputRenderer';
@@ -8,14 +8,16 @@ import { submitResponse } from '../services/userResponse';
 const UserForm = () => {
     const { formData, responseData, handleResponseChange, data } = useSurveyForm();
     const navigate = useNavigate();
+    const [invalidFields, setInvalidFields] = useState([]);
 
     const submitSurveyData = (e) => {
         e.preventDefault();
-        const isValid = validateMandatoryFields(formData, responseData);
-        if (!isValid) {
-            alert("Please fill in all mandatory fields.");
+        const invalidIndexes = validateMandatoryFields(formData, responseData);
+        if (invalidIndexes.length > 0) {
+            setInvalidFields(invalidIndexes);
             return; 
         }
+        setInvalidFields([]);
         const response = {
             surveyId: data.survey_details.ID,
             answers: responseData
@@ -26,10 +28,20 @@ const UserForm = () => {
     };
 
     const validateMandatoryFields = (questions, responses) => {
-        return questions.every((question, index) => {
-            return !question.IS_MANDATORY || (responses[index] && responses[index].answer);
-        });
+        return questions.reduce((acc, question, index) => {
+            const response = responses[index]?.answer;
+            if (question.IS_MANDATORY === 'T') {
+                if (question.TYPE === 'checkbox' && (!Array.isArray(response) || response.length === 0)) {
+                    acc.push(index);
+                }
+                else if (['text', 'date', 'radio', 'dropdown', 'Yes/No'].includes(question.TYPE) && (!response || response.trim() === '')) {
+                    acc.push(index);
+                }
+            }
+            return acc;
+        }, []);
     };
+    
 
     return (
         <Container maxWidth="lg" className='my-5'>
@@ -39,12 +51,12 @@ const UserForm = () => {
                 </Typography>
                 <Box component="form" onSubmit={submitSurveyData}>
                     {formData.map((question, index) => (
-                        <InputRenderer
+                        <InputRenderer 
                             key={question.id}
                             question={question}
                             index={index}
-                            data = {data}
                             response={responseData[index] || {}}
+                            isInvalid={invalidFields.includes(index)}
                             onChange={handleResponseChange}
                         />
                     ))}

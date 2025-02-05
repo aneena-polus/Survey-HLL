@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     questions: [],
-    questionList: []
+    questionList: [],
+    title: ''
 };
 
 const questionSlice = createSlice({
@@ -27,9 +28,12 @@ const questionSlice = createSlice({
             state.questions = state.questions.map((question) => {
                 return question.QUESTION_ID == action.payload.QUESTION_ID ? action.payload : question
             });
+        },
+        editTitleValue: (state, action) => {
+            state.title = action.payload;
         }
     }
 });
 
-export const { getQuestion, addQuestion, resetQuestions, deleteQuestions, editQuestions } = questionSlice.actions;
+export const { getQuestion, addQuestion, resetQuestions, deleteQuestions, editQuestions, editTitleValue } = questionSlice.actions;
 export default questionSlice.reducer;

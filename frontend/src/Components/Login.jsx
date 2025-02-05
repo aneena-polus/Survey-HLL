@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onLogin } from '../services/loginService.jsx';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { ToastMessage } from '../common/Toast.jsx';
 
 function Login() {
     const [loginError, setLoginError] = useState('');
@@ -27,6 +28,7 @@ function Login() {
             localStorage.setItem('userData', JSON.stringify(response.data.userData));
             setUserData(response.data.userData);
             navigate('/surveylist');
+            ToastMessage(`Welcome ${JSON.parse(localStorage.getItem('userData')).username}`);
         })
             .catch((error) => {
                 console.error("Error during login:", error);

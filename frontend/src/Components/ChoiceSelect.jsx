@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getOptionTypes } from '../services/userResponse';
 import { MenuItem, FormControl, InputLabel, Select, FormHelperText, Box } from '@mui/material';
 
-function ChoiceSelect({ setQuestionType, setLookupType, resetTrigger, errors }) {
+function ChoiceSelect({ questionType, lookupType, setQuestionType, setLookupType, resetTrigger, errors }) {
 
     const [optionTypes, setOptionTypes] = useState([]);
     const [selectedOption, setSelectedOption] = useState('');
@@ -17,9 +17,9 @@ function ChoiceSelect({ setQuestionType, setLookupType, resetTrigger, errors }) 
     }, []);
 
     useEffect(() => {
-        setSelectedOption('');
-        setSelectedLookup('');
-    }, [resetTrigger]);
+        setSelectedOption(questionType? questionType : '');
+        setSelectedLookup(lookupType? lookupType : '');
+    }, [resetTrigger, questionType, lookupType]);
 
     const handleQuestionChange = (e) => {
         setQuestionType(e.target.value);
@@ -46,10 +46,10 @@ function ChoiceSelect({ setQuestionType, setLookupType, resetTrigger, errors }) 
                     ))}
                 </Select>
                 {errors.answerType && (
-                    <FormHelperText>Option type is required</FormHelperText>
+                    <FormHelperText>*Question type is required</FormHelperText>
                 )}
             </FormControl>
-            {(selectedOption === 'checkbox' || selectedOption === 'dropdown') && (
+            {(selectedOption === 'checkbox' || selectedOption === 'radio' || selectedOption === 'dropdown') && (
                 <FormControl fullWidth error={!!errors.lookup}>
                     <InputLabel>Lookup Type</InputLabel>
                     <Select value={selectedLookup} size='md' onChange={handleOptionChange} label="Lookup Type">
@@ -63,7 +63,7 @@ function ChoiceSelect({ setQuestionType, setLookupType, resetTrigger, errors }) 
                         ))}
                     </Select>
                     {errors.lookup && (
-                        <FormHelperText>Lookup type is required</FormHelperText>
+                        <FormHelperText>*Lookup type is required</FormHelperText>
                     )}
                 </FormControl>
             )}
