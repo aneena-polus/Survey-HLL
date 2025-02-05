@@ -26,6 +26,8 @@ function Login() {
         e.preventDefault();
         onLogin(userData).then((response) => {
             localStorage.setItem('userData', JSON.stringify(response.data.userData));
+            localStorage.setItem('accessToken', response.data.accessToken);
+            localStorage.setItem('refreshToken', response.data.refreshToken);
             setUserData(response.data.userData);
             navigate('/surveylist');
             ToastMessage(`Welcome ${JSON.parse(localStorage.getItem('userData')).username}`);

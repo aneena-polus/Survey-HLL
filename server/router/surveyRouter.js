@@ -8,7 +8,7 @@ import { getPublishedSurveys, publishSurvey } from "../controller/publishSurvey.
 
 const router = express();
 // router.use(authorization);
-router.get("/getSurveyList/:userRole",authorization, getSurveyList);
+router.get("/getSurveyList/:status",authorization, getSurveyList);
 router.post("/getSurveyData",authorization, getSurveyData);
 
 

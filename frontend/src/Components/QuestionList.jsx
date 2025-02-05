@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
     Card, CardContent, Typography, IconButton, Modal, Box, TextField, Button, Stack, MenuItem,
-    Select, FormControl, InputLabel, Container,
-    FormControlLabel,
-    Checkbox,
-    FormHelperText
+    Select, FormControl, InputLabel, Container, FormControlLabel, Checkbox, FormHelperText
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from "@mui/icons-material/Edit";
