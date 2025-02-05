@@ -5,7 +5,7 @@ import UserForm from './Components/UserForm';
 import UserView from './Components/UserView';
 import Login from './Components/Login';
 import AdminForm from './Components/AdminForm';
-import ViewQuestions from './Components/ViewQuestions';
+import ViewQuestions from './Components/QuestionList';
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 

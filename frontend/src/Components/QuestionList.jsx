@@ -10,8 +10,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from "@mui/icons-material/Edit";
 import { deleteSurveyQuestion, editSurveyQuestion, editTitleSave, getOptionTypes, getQuestionsById, saveSurveyQuestion } from "../services/userResponse";
 import { useDispatch, useSelector } from "react-redux";
-import { addQuestion, deleteQuestions, editQuestions, getQuestion } from "../redux/Slice/surveySlice";
+import { addQuestion, deleteQuestions, editQuestions, editTitleValue, getQuestion } from "../redux/Slice/surveySlice";
 import { useLocation } from "react-router-dom";
+import { ToastMessage } from "../common/Toast";
+import AlertDialogModal from "../common/Confirmation";
 
 const QuestionList = () => {
     const [open, setOpen] = useState(false);
@@ -19,12 +21,15 @@ const QuestionList = () => {
     const location = useLocation();
     const data = location.state;
     const questions = useSelector(state => state.questions.questions);
+    const title = useSelector(state => state.questions.title);
     const [editedQuestion, setEditedQuestion] = useState({});
     const [optionTypes, setOptionTypes] = useState([]);
     const [lookupTypes, setLookupTypes] = useState([]);
     const [errors, setErrors] = useState({});
     const [editFlag, setEditFlag] = useState(false);
-    const [title, setTitle] = useState(data?.survey_details?.TITLE || '');
+    const [isDeleteConfirm, setDeleteConfirm] = useState(false);
+    const [titleChange, setTitleChange] = useState(data?.survey_details.TITLE);
+    const [deleteQuestionId, setDeleteQuestionId] = useState('');
 
     const handleEditClick = (question) => {
         setEditedQuestion(question);
@@ -38,7 +43,11 @@ const QuestionList = () => {
     useEffect(() => {
         if (data?.survey_details) {
             getQuestionsById(data.survey_details.ID)
-                .then((response) => dispatch(getQuestion(response.data.questions || [])))
+                .then((response) => {
+                    dispatch(editTitleValue(data?.survey_details.TITLE || ''))
+                    dispatch(getQuestion(response.data.questions || []))
+                }
+                )
                 .catch((error) => console.error('Error fetching products:', error));
         }
     }, [dispatch, data]);
@@ -59,9 +68,9 @@ const QuestionList = () => {
         const newErrors = {};
         requiredFields.forEach(field => {
             if (!fields[field] || fields[field].trim() === '') {
-                newErrors[field] = `${field} is required`;
+                newErrors[field] = `*${field} is required`;
             }
-            if (field === 'LOOKUP' && (fields['ANSWER_TYPE'] == 'text' || fields['ANSWER_TYPE'] == 'Yes/No' || fields['ANSWER_TYPE'] == 'date')) {
+            if (field == 'LOOKUP' && (fields['ANSWER_TYPE'] == 'text' || fields['ANSWER_TYPE'] == 'Yes/No' || fields['ANSWER_TYPE'] == 'date')) {
                 delete newErrors['LOOKUP'];
             };
         });
@@ -86,6 +95,7 @@ const QuestionList = () => {
         if (editedQuestion.QUESTION_ID) {
             editSurveyQuestion(editedQuestion.QUESTION_ID, formattedQuestion).then((response) => {
                 dispatch(editQuestions(response.data.updatedData));
+                ToastMessage('Question Updated Successfully!');
             })
         }
         else {
@@ -99,51 +109,75 @@ const QuestionList = () => {
             saveSurveyQuestion(formattedQuestion).then((response) => {
                 dispatch(addQuestion(response.data.data[0]));
             });
+            ToastMessage('Question Added Successfully!');
         }
         setEditedQuestion({});
         setErrors({});
         setOpen(false);
     };
 
-    const deleteQuestion = (index) => {
-        deleteSurveyQuestion(index).then(() => {
-            dispatch(deleteQuestions(index));
+    const openDeleteConfirm = (questionId) => {
+        setDeleteQuestionId(questionId);
+        if (questions.length <= 1) {
+            alert('Require atleast one question');
+            return;
+        }
+        setDeleteConfirm(true);
+    }
+
+    const deleteQuestion = () => {
+        deleteSurveyQuestion(deleteQuestionId).then(() => {
+            dispatch(deleteQuestions(deleteQuestionId));
+            setDeleteConfirm(false);
+            ToastMessage('Question Deleted Successfully!');
         });
     };
 
     const editTitle = () => {
         const response = {
             surveyId: data.survey_details.ID,
-            newTitle: title
+            newTitle: titleChange
         }
+        if (!response.newTitle) {
+            setErrors({ title: '*Title is required' });
+            return;
+        };
         editTitleSave(response).then((res) => {
-            setTitle(res.data.newTitle);
+            dispatch(editTitleValue(res.data.newTitle));
             setEditFlag(false);
         });
     };
 
     return (
         <Container maxWidth="lg" className="p-4 mt-4">
-            <div className="d-flex justify-content-between align-items-center my-2">
-                {!editFlag &&
-                    (<>
+            <Box display="flex" justifyContent="space-between" alignItems="center" my={2}>
+                {!editFlag ? (
+                    <>
                         <Typography variant="h5" gutterBottom>
                             {title}
                         </Typography>
-                        <IconButton onClick={() => { setEditFlag(true); }} color="primary">
+                        <IconButton onClick={() => setEditFlag(true)} color="primary">
                             <EditIcon />
                         </IconButton>
-                    </>)}
-                {editFlag && (
-                    <>
-                        <TextField fullWidth label="Enter Form Title" value={title} className='mb-2'
-                            onChange={(e) => setTitle(e.target.value)} error={Boolean(errors.title)} helperText={errors.title} />
-                        <Button variant="contained" onClick={editTitle}>
-                            Save
-                        </Button>
-                    </>)}
-            </div>
-            <Button variant="contained" color="primary" className="mb-3" onClick={handleAddClick}> Add Question </Button>
+                    </>
+                ) : (
+                    <Stack spacing={1} alignItems="end" width="100%">
+                        <TextField fullWidth label="Enter Form Title" value={titleChange} helperText={errors.title}
+                            onChange={(e) => setTitleChange(e.target.value)} error={Boolean(errors.title)} />
+                        <Stack direction="row" spacing={1}>
+                            <Button variant="outlined" color="primary" onClick={() => { setEditFlag(false); setTitleChange(title); }}>
+                                Cancel
+                            </Button>
+                            <Button variant="contained" onClick={editTitle}>
+                                Save
+                            </Button>
+                        </Stack>
+                    </Stack>
+                )}
+            </Box>
+            <Button variant="contained" color="primary" sx={{ mb: 3 }} onClick={handleAddClick}>
+                Add Question
+            </Button>
             <Stack spacing={2}>
                 {questions.map((question) => (
                     <Card key={question.QUESTION_ID} className="d-flex p-2 justify-content-between">
@@ -164,17 +198,20 @@ const QuestionList = () => {
                             <IconButton onClick={() => handleEditClick(question)} color="primary">
                                 <EditIcon />
                             </IconButton>
-                            <IconButton color="error" onClick={() => deleteQuestion(question.QUESTION_ID)}>
+                            <IconButton color="error" onClick={() => openDeleteConfirm(question.QUESTION_ID)}>
                                 <DeleteIcon />
                             </IconButton>
+                            {isDeleteConfirm && (
+                                <AlertDialogModal open={isDeleteConfirm} onClose={() => { setDeleteConfirm(false); setDeleteQuestionId('') }} onConfirm={() => deleteQuestion()} />
+                            )}
                         </div>
                     </Card>
                 ))}
-                <Modal open={open} onClose={() => {setOpen(false); setEditedQuestion({});}}>
+                <Modal open={open} onClose={() => { setOpen(false); setEditedQuestion({}); }}>
                     <Box className='modal-container'>
-                        <Typography variant="h6">Edit Question</Typography>
+                        <Typography variant="h6">{editedQuestion.QUESTION ? 'Edit' : 'Add'} Question</Typography>
                         <TextField fullWidth margin="normal" label="Question Text" name="QUESTION"
-                            value={editedQuestion.QUESTION} onChange={handleChange} error={Boolean(errors.QUESTION)} helperText={errors.QUESTION ? 'Question is required' : ''} />
+                            value={editedQuestion.QUESTION} onChange={handleChange} error={Boolean(errors.QUESTION)} helperText={errors.QUESTION ? '*Question is required' : ''} />
                         <FormControl fullWidth margin="normal">
                             <InputLabel>Data Type</InputLabel>
                             <Select name="ANSWER_TYPE" value={editedQuestion.ANSWER_TYPE} onChange={handleChange} label="Data Type"
@@ -185,9 +222,9 @@ const QuestionList = () => {
                                     </MenuItem>
                                 ))}
                             </Select>
-                            {errors.ANSWER_TYPE && <FormHelperText className="text-danger">Data type is required</FormHelperText>}
+                            {errors.ANSWER_TYPE && <FormHelperText className="text-danger">*Data type is required</FormHelperText>}
                         </FormControl>
-                        {(editedQuestion.ANSWER_TYPE == 'dropdown' || editedQuestion.ANSWER_TYPE == 'checkbox') && <FormControl fullWidth margin="normal">
+                        {(editedQuestion.ANSWER_TYPE == 'dropdown' || editedQuestion.ANSWER_TYPE == 'radio' || editedQuestion.ANSWER_TYPE == 'checkbox') && <FormControl fullWidth margin="normal">
                             <InputLabel>Lookup Type</InputLabel>
                             <Select name="LOOKUP" value={editedQuestion.LOOKUP} onChange={handleChange} label="Lookup Type"
                                 error={Boolean(errors.LOOKUP)}>
@@ -197,7 +234,7 @@ const QuestionList = () => {
                                     </MenuItem>
                                 ))}
                             </Select>
-                            {errors.LOOKUP && <FormHelperText className="text-danger">Lookup is required</FormHelperText>}
+                            {errors.LOOKUP && <FormHelperText className="text-danger">*Lookup is required</FormHelperText>}
                         </FormControl>}
                         <FormControlLabel control={<Checkbox checked={editedQuestion.IS_MANDATORY === "T"} />}
                             label="Is Mandatory?" onChange={(e) => {

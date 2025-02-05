@@ -2,12 +2,14 @@ import React, { useContext, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { addQuestion, resetQuestions, deleteQuestions } from '../redux/Slice/surveySlice';
-import { deleteSurveyQuestion, saveSurveyQuestion, saveSurveyTitles } from '../services/userResponse';
+import { addQuestion, resetQuestions, deleteQuestions, editQuestions } from '../redux/Slice/surveySlice';
+import { deleteSurveyQuestion, editSurveyQuestion, saveSurveyQuestion, saveSurveyTitles } from '../services/userResponse';
 import { TextField, Button, Checkbox, FormControlLabel, Card, Typography, Box, IconButton, Container } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from "@mui/icons-material/Edit";
 import ChoiceSelect from './ChoiceSelect';
 import { ToastMessage } from '../common/Toast';
+import AlertDialogModal from '../common/Confirmation';
 
 function AdminForm() {
     const { userData } = useContext(AuthContext);
@@ -21,7 +23,10 @@ function AdminForm() {
     const [isMandatory, setIsMandatory] = useState("F");
     const [questionType, setQuestionType] = useState('');
     const [lookupType, setLookupType] = useState('');
+    const [editQuestionId, setEditQuestionId] = useState(null);
     const [errors, setErrors] = useState({});
+    const [isDeleteConfirm, setDeleteConfirm] = useState(false);
+    const [deleteQuestionId, setDeleteQuestionId] = useState('');
     const navigate = useNavigate();
 
     const saveSurveyTitle = () => {
@@ -41,20 +46,22 @@ function AdminForm() {
         setNextFlag(1);
     };
 
-    const deleteQuestion = (index) => {
-        deleteSurveyQuestion(index).then(() => {
-            dispatch(deleteQuestions(index));
-            ToastMessage('Question Deleted Successfully!');
+    const deleteQuestion = () => {
+        deleteSurveyQuestion(deleteQuestionId).then(() => {
+            setDeleteConfirm(false);
+            dispatch(deleteQuestions(deleteQuestionId));
         });
+        setDeleteQuestionId('');
+        ToastMessage('Question Deleted successfully!');
     };
 
     const validate = (fields, requiredFields, setErrors) => {
         const newErrors = {};
         requiredFields.forEach(field => {
             if (!fields[field] || fields[field].trim() === '') {
-                newErrors[field] = `${field} is required`;
+                newErrors[field] = `*${field} is required`;
             }
-            if (field === 'lookup' && (fields['answerType'] == 'text' || fields['answerType'] == 'Yes/No' || fields['answerType'] == 'date')) {
+            if (field == 'lookup' && (fields['answerType'] == 'text' || fields['answerType'] == 'Yes/No' || fields['answerType'] == 'date')) {
                 delete newErrors['lookup'];
             };
         });
@@ -64,22 +71,51 @@ function AdminForm() {
 
     const handleAddQuestion = () => {
         const requiredFields = ['question', 'answerType', 'lookup'];
-        const newQ = {
+        const requestObj = {
             question: newQuestion,
             answerType: questionType,
             isMandatory: isMandatory,
             surveyId: surveyDetails,
             lookup: lookupType || null
         };
-        if (!validate(newQ, requiredFields, setErrors)) return;
-        saveSurveyQuestion(newQ).then((response) => {
-            dispatch(addQuestion(response.data.data[0]));
-        });
+        if (!validate(requestObj, requiredFields, setErrors)) return;
+        if (editQuestionId) {
+            let formattedQuestion = {
+                QUESTION: newQuestion,
+                ANSWER_TYPE: questionType,
+                IS_MANDATORY: isMandatory
+            };
+            if (!['text', 'date', 'Yes/No'].includes(questionType) && lookupType) {
+                formattedQuestion.LOOKUP = lookupType;
+            }
+            editSurveyQuestion(editQuestionId, formattedQuestion).then((response) => {
+                dispatch(editQuestions(response.data.updatedData));
+                ToastMessage('Question Updated Successfully!');
+            });
+            setEditQuestionId(null);
+        }
+        else {
+            saveSurveyQuestion(requestObj).then((response) => {
+                dispatch(addQuestion(response.data.data[0]));
+                ToastMessage('Question Added Successfully!');
+            });
+        }
         setNewQuestion('');
         setIsMandatory("F");
+        setEditQuestionId(null);
         setQuestionType('');
         setLookupType('');
+        setErrors({});
         setResetTrigger(prev => !prev);
+    };
+
+    const handleEditQuestion = (question) => {
+        setErrors({});
+        setNewQuestion(question.QUESTION);
+        setQuestionType(question.ANSWER_TYPE);
+        setLookupType(question.LOOKUP);
+        setIsMandatory(question.IS_MANDATORY);
+        setEditQuestionId(question.QUESTION_ID);
     };
 
     const saveSurvey = () => {
@@ -87,9 +123,24 @@ function AdminForm() {
             alert('Please add at least one question');
             return;
         }
+        ToastMessage('Survey saved successfully!');
         navigate('/surveylist');
         dispatch(resetQuestions());
     };
+
+    const handleCancelEdit = () => {
+        setErrors({});
+        setNewQuestion('');
+        setIsMandatory("F");
+        setEditQuestionId(null);
+        setQuestionType('');
+        setLookupType('');
+    }
+
+    const openDeleteConfirm = (questionId) => {
+        setDeleteQuestionId(questionId);
+        setDeleteConfirm(true);
+    }
 
     return (
         <Container maxWidth="lg">
@@ -113,17 +164,21 @@ function AdminForm() {
                                     Enter a New Question <span className='text-danger'>*</span>
                                 </Typography>
                                 <TextField fullWidth value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}
-                                    error={Boolean(errors.question)} helperText={errors.question ? 'Question is required' : ''}
+                                    error={Boolean(errors.question)} helperText={errors.question ? '*Question is required' : ''}
                                     variant="standard" className='mb-2'
                                 />
-                                <ChoiceSelect setQuestionType={setQuestionType} setLookupType={setLookupType} errors={errors} resetTrigger={resetTrigger} />
+                                <ChoiceSelect questionType={questionType} lookupType={lookupType} setQuestionType={setQuestionType} setLookupType={setLookupType} errors={errors} resetTrigger={resetTrigger} />
                                 <FormControlLabel
                                     control={<Checkbox checked={isMandatory === "T"} onChange={(e) => setIsMandatory(e.target.checked ? "T" : "F")} />}
                                     label="Is Mandatory?"
                                 />
                                 <Box textAlign="right">
+                                    {editQuestionId &&
+                                        (<Button variant="outlined" color="success" onClick={handleCancelEdit} sx={{ mr: 1 }}>
+                                            Cancel
+                                        </Button>)}
                                     <Button variant="contained" color="success" onClick={handleAddQuestion}>
-                                        Add Question
+                                        {editQuestionId ? 'Edit Question' : 'Add Question'}
                                     </Button>
                                 </Box>
                             </Card>
@@ -144,9 +199,18 @@ function AdminForm() {
                                             </Typography>
                                         )}
                                     </Box>
-                                    <IconButton color="error" onClick={() => deleteQuestion(q.QUESTION_ID)}>
-                                        <DeleteIcon />
-                                    </IconButton>
+                                    <Box>
+                                        <IconButton color="primary" onClick={() => handleEditQuestion(q)}>
+                                            <EditIcon />
+                                        </IconButton>
+                                        <IconButton color="error" onClick={() => openDeleteConfirm(q.QUESTION_ID)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                        {isDeleteConfirm && (
+                                            <AlertDialogModal open={isDeleteConfirm} onClose={() => {setDeleteConfirm(false); setDeleteQuestionId('')}} onConfirm={() => deleteQuestion()} />
+                                        )}
+                                    </Box>
+
                                 </Box>
                             </Card>
                         ))}

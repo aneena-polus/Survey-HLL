@@ -1,9 +1,9 @@
-import axios from 'axios';
+import axiosInstance from "../config/axiosConfig";
 
 export const onLogin = (userData) => {
-    return axios.post("http://10.199.100.137:3000/login",userData);
+    return axiosInstance.post("login",userData);
 };
 
 export const onLogout = () => {
-    return axios.get("http://10.199.100.137:3000/logout", { withCredentials: true });
+    return axiosInstance.get("/logout", { withCredentials: true });
 };

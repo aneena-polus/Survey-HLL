@@ -1,5 +1,6 @@
 import express from "express";
 import { userLogin } from "../controller/loginController.js";
+import { authorization } from "../middleware/authorization.js";
 
 const router = express();
 
