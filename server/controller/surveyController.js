@@ -1,12 +1,28 @@
 import { connection } from "../config/connection.js";
 
 export const getSurveyList = async (req, res) => {
-    const { userRole } = req.params;
+    const { status } = req.params;
+    const userId = req.user.userId;
+
     const query = `
-        SELECT * FROM survey sur LEFT JOIN person per ON 
-        sur.UPDATE_PERSON = per.PERSON_ID where STATUS = ?`;
-    connection.query(query, [userRole], (err, results) => {
-        if (err) throw err;
+        SELECT sur.ID, sur.TITLE, sur.CREATED_BY, per.USERNAME, sur.UPDATE_TIMESTAMP, 
+               sur.STATUS,
+               IF(COUNT(sr.ID) = COUNT(sq.ID) AND NOT EXISTS (SELECT 1 FROM survey_response WHERE SURVEY_ID = sur.ID AND UPDATE_PERSON = ? AND ANSWER_STATUS = 'PENDING'), 
+               'completed', 'pending') AS user_survey_status
+        FROM survey sur
+        LEFT JOIN person per ON sur.UPDATE_PERSON = per.PERSON_ID
+        LEFT JOIN survey_question sq ON sq.SURVEY_ID = sur.ID
+        LEFT JOIN survey_response sr ON sr.SURVEY_ID = sur.ID AND sr.QUESTION_ID = sq.ID AND sr.UPDATE_PERSON = ?
+        WHERE sur.STATUS = ?
+        GROUP BY sur.ID, sur.TITLE, sur.CREATED_BY, per.USERNAME, sur.UPDATE_TIMESTAMP, sur.STATUS
+    `;
+
+    connection.query(query, [userId, userId, status], (err, results) => {
+        if (err) {
+            console.error("Error fetching survey list:", err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
         const responseData = results.map(item => ({
             ID: item.ID,
             TITLE: item.TITLE,
@@ -14,10 +30,13 @@ export const getSurveyList = async (req, res) => {
             UPDATE_PERSON: item.USERNAME,
             UPDATE_TIMESTAMP: item.UPDATE_TIMESTAMP,
             STATUS: item.STATUS,
+            USER_SURVEY_STATUS: item.user_survey_status 
         }));
+
         res.json(responseData);
     });
 };
+
 
 export const getSurveyData = async (req, res) => {
     const { id, user_id } = req.body;

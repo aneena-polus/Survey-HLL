@@ -5,6 +5,8 @@ import { answerTypes, getQuestion, removeQuestion, saveQuestion, updateQuestion 
 import { getAllQuestionBySurveyId, getOuestionFormById, getSurveyFormList, removeSurveyForm, saveSurveyForm, updateSurveyTitle } from "../controller/surveyFormController.js";
 import saveSurveyResponses from "../controller/surveyResponse.js";
 import { getPublishedSurveys, publishSurvey } from "../controller/publishSurvey.js";
+import { copySurveyFormQuestions } from "../controller/copySurveyQuestions.js";
+import { createLookupValues, deleteLookup, deleteOption, getAllLookups, getLookupOptionsById, updateLookupById, updateOption } from "../controller/lookupController.js";
 
 const router = express();
 // router.use(authorization);
@@ -32,5 +34,16 @@ router.post('/publishSurvey/:surveyId',authorization, publishSurvey);
 router.get('/getPublishedSurveys',authorization, getPublishedSurveys);
 
 router.post('/saveSurveyAnswers', authorization, saveSurveyResponses);
+
+router.post('/copySurvey', authorization, copySurveyFormQuestions);
+
+router.post('/createlookup', authorization, createLookupValues);
+router.get('/getAllLookups', authorization, getAllLookups)
+router.delete('/deleteLookup/:lookupId', authorization, deleteLookup);
+router.put('/updateOption/:optionId', authorization, updateOption);
+router.put('/updateOption', authorization, updateOption);
+router.delete('/deleteOption/:optionId', authorization, deleteOption);
+router.put('/updateLookupById', authorization, updateLookupById);
+router.get('/getLookupOptionsById/:lookupId', authorization, getLookupOptionsById)
 
 export default router;
