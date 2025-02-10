@@ -23,6 +23,11 @@ export const getSurveyList = async (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
+    const query = `
+        SELECT * FROM survey sur LEFT JOIN person per ON 
+        sur.UPDATE_PERSON = per.PERSON_ID where STATUS = ?`;
+    connection.query(query, [status], (err, results) => {
+        if (err) throw err;
         const responseData = results.map(item => ({
             ID: item.ID,
             TITLE: item.TITLE,
