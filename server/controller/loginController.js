@@ -20,9 +20,7 @@ export const userLogin = async (req, res) => {
             }
             bcrypt.compare(password, user.PASSWORD, (err, isMatch) => {
                 if (err) return res.status(500).json({ error: "Password verification failed" });
-                if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
-                const token = jwt.sign({ id: user.ID, role: user.ROLE }, process.env.ACCESS_TOKEN, { expiresIn: "1h" });
-                return res.cookie("access_token", token).status(200).json({ message: "Login successful", userData});
+                if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });             
                 
                 const accessToken = jwt.sign(
                     { userId: user.PERSON_ID, role: user.ROLE },

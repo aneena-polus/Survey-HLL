@@ -2,27 +2,29 @@ import { connection } from "../config/connection.js";
 
 const saveSurveyForm = async (req, res) => {
     try {
-        const { title, created_by } = req.body
+        const { title, created_by, description } = req.body;
 
         if (!created_by) {
             console.error('Missing created_by in request body');
             return res.status(400).json({ error: 'created_by is required' });
         }
 
-        const checkPerson = 'SELECT PERSON_ID, ROLE FROM person WHERE PERSON_ID = ?'
+        const checkPerson = 'SELECT PERSON_ID, ROLE FROM person WHERE PERSON_ID = ?';
         connection.query(checkPerson, [created_by], (err, result) => {
             if (err) {
                 console.error('Error while checking Person and Role', err);
-                return res.status(500).json({ error: 'Failed to check person' })
+                return res.status(500).json({ error: 'Failed to check person' });
             }
-            if (result.length == 0) {
-                console.error('Invalid person_id', err);
 
-                return res.status(400).json({ error: 'Invalid person_Id' })
+            if (result.length === 0) {
+                console.error('Invalid person_id', err);
+                return res.status(400).json({ error: 'Invalid person_Id' });
             }
+
             const person = result[0];
-            const personRole = person.ROLE
-            let updatePerson = created_by
+            const personRole = person.ROLE;
+            let updatePerson = created_by;
+
             if (personRole == 1) {
                 updatePerson = created_by;
             } else if (personRole == 2) {
@@ -30,36 +32,38 @@ const saveSurveyForm = async (req, res) => {
             } else {
                 updatePerson = created_by;
             }
-            const insertquery = `INSERT INTO survey (TITLE, CREATED_BY, UPDATE_PERSON, UPDATE_TIMESTAMP) VALUES (?, ?, ?, NOW())`;
-            connection.query(insertquery, [title, created_by, updatePerson], (err, result) => {
+
+            const insertQuery = `
+                INSERT INTO survey (TITLE, CREATED_BY, UPDATE_PERSON, DESCRIPTION, UPDATE_TIMESTAMP)
+                VALUES (?, ?, ?, ?, NOW())`;
+            
+            connection.query(insertQuery, [title, created_by, updatePerson, description], (err, result) => {
                 if (err) {
                     console.error('Error saving survey form:', err);
                     return res.status(500).json({ error: 'Failed to save survey form' });
                 }
 
-                const surveyFormId = result.insertId
+                const surveyFormId = result.insertId;
 
                 res.status(200).json({ message: 'Survey form saved successfully', surveyFormId: surveyFormId });
-            })
-
-
+            });
         });
-
     } catch (error) {
-        console.error('Error saving surveyForm:', err);
+        console.error('Error saving surveyForm:', error);
         return res.status(500).json({ error: 'Failed to save survey form' });
     }
-}
+};
+
 
 const updateSurveyTitle = async (req, res) => {
     try {
 
-        const {surveyId, newTitle} = req.body;
+        const {surveyId, newTitle, newDescription } = req.body;
         if (!surveyId || !newTitle) {
             return res.status(400).json({ error: 'Survey ID and new title are required' });
         }
-        const updateQuery = 'UPDATE survey SET TITLE = ?, UPDATE_TIMESTAMP = NOW() WHERE ID = ?';
-        connection.query(updateQuery, [newTitle, surveyId], (err,result) => {
+        const updateQuery = 'UPDATE survey SET TITLE = ?, DESCRIPTION = ?, UPDATE_TIMESTAMP = NOW() WHERE ID = ?';
+        connection.query(updateQuery, [newTitle, newDescription, surveyId], (err,result) => {
             if (err) {
                 console.error('Error updating survey title:', err);
                 return res.status(500).json({ error: 'Failed to update survey title' });
@@ -67,7 +71,7 @@ const updateSurveyTitle = async (req, res) => {
             if (result.affectedRows === 0) {
                 return res.status(404).json({ error: 'Survey not found' });
             }
-            res.status(200).json({ message: 'Survey title updated successfully', newTitle });
+            res.status(200).json({ message: 'Survey title updated successfully', TITLE:newTitle, DESCRIPTION:newDescription });
         })
 
     } catch (error) {
@@ -85,7 +89,7 @@ const getSurveyFormList = async (req, res) => {
 
         
         const query = `
-            SELECT s.ID, s.TITLE, s.CREATED_BY, s.UPDATE_TIMESTAMP, s.STATUS, p.USERNAME AS UPDATE_PERSON
+            SELECT s.ID, s.TITLE, s.CREATED_BY, s.UPDATE_TIMESTAMP, s.STATUS, s.DESCRIPTION, p.USERNAME AS UPDATE_PERSON
             FROM survey s
             JOIN survey_question sq ON s.ID = sq.SURVEY_ID
             LEFT JOIN person p ON s.UPDATE_PERSON = p.PERSON_ID

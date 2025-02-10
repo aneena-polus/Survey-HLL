@@ -21,16 +21,11 @@ const answerTypes = async (req, res) => {
     }
 
     const answerTypeIds = answerTypesResults
-      .filter(at => at.TYPE === 'checkbox' || at.TYPE === 'dropdown' || at.TYPE === 'radio')
+      .filter(at => at.TYPE === 'Checkbox' || at.TYPE === 'Dropdown' || at.TYPE === 'Radio')
       .map(at => at.ID);
 
-    let lookupValues = [];
     if (answerTypeIds.length > 0) {
-      const lookupQuery = `
-        SELECT LOOKUP
-        FROM answer_option
-        WHERE ID IN (${answerTypeIds.join(',')});
-      `;
+      const lookupQuery = `SELECT DISTINCT ao.LOOKUP, ak.KEY FROM answer_option ao JOIN answer_key ak ON ao.LOOKUP = ak.ID ORDER BY ao.LOOKUP`;
 
       connection.query(lookupQuery, (err, lookupResults) => {
         if (err) {
@@ -77,8 +72,8 @@ const saveQuestion = (req, res) => {
 
     const query = `
       INSERT INTO survey_question 
-      (SURVEY_ID, QUESTION, ANSWER_TYPE, LOOKUP, UPDATE_TIMESTAMP, UPDATE_PERSON, IS_MANDATORY)
-      VALUES (?, ?, ?, ?, NOW(), ?, ?)
+      (SURVEY_ID, QUESTION, ANSWER_TYPE, LOOKUP, UPDATE_TIMESTAMP, UPDATE_PERSON, IS_MANDATORY, IS_NEW)
+      VALUES (?, ?, ?, ?, NOW(), ?, ?, 1)
     `;
 
     connection.query(query, [surveyId, question, answerTypeId, lookup || null, 1, isMandatoryValue], (err, result) => {
