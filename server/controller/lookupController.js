@@ -69,7 +69,7 @@ const getAllLookups = async (req, res) => {
                 ak.KEY 
             FROM answer_option ao
             JOIN answer_key ak ON ao.LOOKUP = ak.ID
-            ORDER BY ao.LOOKUP
+            ORDER BY ak.KEY ASC
         `;
 
         connection.query(query, (err, results) => {
@@ -332,6 +332,10 @@ const getLookupOptionsById = async (req, res) => {
                     optionId: ID,
                     optionText: option_text
                 });
+            });
+
+            Object.keys(groupedLookups).forEach(lookup => {
+                groupedLookups[lookup].options.sort((a, b) => a.optionText.localeCompare(b.optionText));
             });
 
             const formattedLookups = Object.keys(groupedLookups).map(lookup => ({
