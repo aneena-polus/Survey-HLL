@@ -11,7 +11,7 @@ import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
 
 export default function AlertDialogModal({ open, onClose, onConfirm }) {
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open} onClose={onClose} sx={{ backdropFilter: "blur(0.1px)"}}>
             <ModalDialog variant="outlined" role="alertdialog">
                 <DialogTitle>
                     <WarningRoundedIcon />
@@ -19,7 +19,7 @@ export default function AlertDialogModal({ open, onClose, onConfirm }) {
                 </DialogTitle>
                 <Divider />
                 <DialogContent>
-                    Are you sure you want to delete this question?
+                    Are you sure you want to delete this?
                 </DialogContent>
                 <DialogActions>
                     <Button variant="solid" color="danger" onClick={onConfirm} startDecorator={<DeleteForever />}>

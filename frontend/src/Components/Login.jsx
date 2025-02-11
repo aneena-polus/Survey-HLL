@@ -33,8 +33,7 @@ function Login() {
             ToastMessage(`Welcome ${JSON.parse(localStorage.getItem('userData')).username}`);
         })
             .catch((error) => {
-                console.error("Error during login:", error);
-                setLoginError(error.response.data);
+                setLoginError(error.response.data.error);
             });
     };
 

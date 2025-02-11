@@ -5,5 +5,5 @@ export const onLogin = (userData) => {
 };
 
 export const onLogout = () => {
-    return axiosInstance.get("/logout", { withCredentials: true });
+    return axiosInstance.get("/logout");
 };

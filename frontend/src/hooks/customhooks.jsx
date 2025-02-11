@@ -21,7 +21,7 @@ const useSurveyForm = () => {
                 setFormData(response.data);
                 const initialResponses = response.data.map((item) => ({
                     questionId: null,
-                    answer: item.TYPE == 'checkbox'
+                    answer: item.TYPE == 'Checkbox'
                         ? (item.ANSWER ? item.ANSWER.split(',').map((answer) => answer.trim()) : [])
                         : item.ANSWER
                 }));
