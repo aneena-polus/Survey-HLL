@@ -15,3 +15,21 @@
     font-size: 13px;
     padding: 10px;
 }
+
+.badge-style {
+    min-width: 70px;
+    text-align: center;
+}
+
+.scrollable-modal {
+    max-height: 80vh;
+    overflow-y: auto;
+    background-color: "background.paper";
+    box-shadow: 24;
+    padding: 4;
+    border-radius: 2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}

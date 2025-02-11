@@ -18,9 +18,10 @@ const UserForm = () => {
             return; 
         }
         setInvalidFields([]);
+        const filteredResponses = responseData.filter(response => response.questionId !== null);
         const response = {
             surveyId: data.survey_details.ID,
-            answers: responseData
+            answers: filteredResponses
         }     
         submitResponse(response).then(()=>{
             navigate('/surveylist');
@@ -31,10 +32,10 @@ const UserForm = () => {
         return questions.reduce((acc, question, index) => {
             const response = responses[index]?.answer;
             if (question.IS_MANDATORY === 'T') {
-                if (question.TYPE === 'checkbox' && (!Array.isArray(response) || response.length === 0)) {
+                if (question.TYPE === 'Checkbox' && (!Array.isArray(response) || response.length === 0)) {
                     acc.push(index);
                 }
-                else if (['text', 'date', 'radio', 'dropdown', 'Yes/No'].includes(question.TYPE) && (!response || response.trim() === '')) {
+                else if (['Text', 'Date', 'Radio', 'Dropdown', 'Yes/No'].includes(question.TYPE) && (!response || response.trim() === '')) {
                     acc.push(index);
                 }
             }
@@ -54,17 +55,18 @@ const UserForm = () => {
                         <InputRenderer 
                             key={question.id}
                             question={question}
+                            data = {data}
                             index={index}
                             response={responseData[index] || {}}
                             isInvalid={invalidFields.includes(index)}
                             onChange={handleResponseChange}
                         />
                     ))}
-                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                    {data.survey_details.USER_SURVEY_STATUS=='pending' && <Box display="flex" justifyContent="flex-end" mt={2}>
                         <Button type="submit" variant="contained" color="success">
                             Save
                         </Button>
-                    </Box>
+                    </Box>}
                 </Box>
             </Paper>
         </Container>

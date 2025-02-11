@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { addQuestion, resetQuestions, deleteQuestions, editQuestions } from '../redux/Slice/surveySlice';
 import { deleteSurveyQuestion, editSurveyQuestion, saveSurveyQuestion, saveSurveyTitles } from '../services/userResponse';
-import { TextField, Button, Checkbox, FormControlLabel, Card, Typography, Box, IconButton, Container } from '@mui/material';
+import { TextField, Button, Checkbox, FormControlLabel, Card, Typography, Box, IconButton, Container, InputLabel } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from "@mui/icons-material/Edit";
 import ChoiceSelect from './ChoiceSelect';
@@ -17,6 +17,7 @@ function AdminForm() {
     const questions = useSelector(state => state.questions.questions || []);
     const [surveyDetails, setSurveyDetails] = useState([]);
     const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
     const [nextFlag, setNextFlag] = useState(0);
     const [resetTrigger, setResetTrigger] = useState(false);
     const [newQuestion, setNewQuestion] = useState('');
@@ -32,10 +33,11 @@ function AdminForm() {
     const saveSurveyTitle = () => {
         const saveTitleObj = {
             title: title,
-            created_by: userData.userId
+            created_by: userData.userId,
+            ...(description && { description })
         };
         if (!saveTitleObj.title) {
-            setErrors({ title: '*Title is required' });
+            setErrors({ title: '* Title is required' });
             return;
         };
         saveSurveyTitles(saveTitleObj).then((response) => {
@@ -59,9 +61,9 @@ function AdminForm() {
         const newErrors = {};
         requiredFields.forEach(field => {
             if (!fields[field] || fields[field].trim() === '') {
-                newErrors[field] = `*${field} is required`;
+                newErrors[field] = `* ${field} is required`;
             }
-            if (field == 'lookup' && (fields['answerType'] == 'text' || fields['answerType'] == 'Yes/No' || fields['answerType'] == 'date')) {
+            if (field == 'lookup' && (fields['answerType'] == 'Text' || fields['answerType'] == 'Yes/No' || fields['answerType'] == 'Date')) {
                 delete newErrors['lookup'];
             };
         });
@@ -85,20 +87,20 @@ function AdminForm() {
                 ANSWER_TYPE: questionType,
                 IS_MANDATORY: isMandatory
             };
-            if (!['text', 'date', 'Yes/No'].includes(questionType) && lookupType) {
+            if (!['Text', 'Date', 'Yes/No'].includes(questionType) && lookupType) {
                 formattedQuestion.LOOKUP = lookupType;
             }
             editSurveyQuestion(editQuestionId, formattedQuestion).then((response) => {
                 dispatch(editQuestions(response.data.updatedData));
                 ToastMessage('Question Updated Successfully!');
-            });
+            }).catch((error) => console.error('Error fetching Questions:', error));
             setEditQuestionId(null);
         }
         else {
             saveSurveyQuestion(requestObj).then((response) => {
                 dispatch(addQuestion(response.data.data[0]));
                 ToastMessage('Question Added Successfully!');
-            });
+            }).catch((error) => console.error('Error fetching Questions:', error));
         }
         resetValues();
         setResetTrigger(prev => !prev);
@@ -106,6 +108,7 @@ function AdminForm() {
 
     const handleEditQuestion = (question) => {
         setErrors({});
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         setNewQuestion(question.QUESTION);
         setQuestionType(question.ANSWER_TYPE);
         setLookupType(question.LOOKUP);
@@ -140,32 +143,39 @@ function AdminForm() {
     return (
         <Container maxWidth="lg">
             <Card className='p-4 mt-4'>
-                <Typography variant="h5" gutterBottom>
-                    {title || 'Create Survey'}
-                </Typography>
+                <div className='d-flex flex-column'>
+                    <Typography variant="h5">
+                        {title || 'Create Survey'}
+                    </Typography>
+                    <Typography variant="p" className='mb-3' gutterBottom>
+                        {description}
+                    </Typography>
+                </div>
                 {!nextFlag && (
-                    <TextField fullWidth label="Enter Form Title" value={title} className='mb-2'
-                        onChange={(e) => setTitle(e.target.value)} error={Boolean(errors.title)} helperText={errors.title} />
+                    <>
+                        <InputLabel className="fw-bold"><span className='text-danger'>*</span> Title</InputLabel>
+                        <TextField fullWidth value={title} className='mb-3'
+                            onChange={(e) => setTitle(e.target.value)} error={Boolean(errors.title)} helperText={errors.title} />
+                        <InputLabel className='fw-bold'>Description</InputLabel>
+                        <TextField fullWidth className='mb-2' multiline rows={3}
+                            onChange={(e) => setDescription(e.target.value)} error={Boolean(errors.description)} helperText={errors.description} />
+                    </>
                 )}
                 {!nextFlag ? (
-                    <Button variant="contained" onClick={saveSurveyTitle}>
+                    <Button variant="contained" onClick={saveSurveyTitle} className='mt-2'>
                         Next
                     </Button>
                 ) : (
                     <>
                         <Box my={3}>
                             <Card variant="outlined" className='p-3'>
-                                <Typography variant="subtitle1" gutterBottom>
-                                    Enter a New Question <span className='text-danger'>*</span>
-                                </Typography>
+                                <InputLabel className="fw-bold"><span className='text-danger'>*</span> Enter a New Question</InputLabel>
                                 <TextField fullWidth value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}
-                                    error={Boolean(errors.question)} helperText={errors.question ? '*Question is required' : ''}
-                                    variant="standard" className='mb-2'
-                                />
+                                    error={Boolean(errors.question)} helperText={errors.question ? '* Question is required' : ''}
+                                    variant="standard" className='mb-4 py-2' />
                                 <ChoiceSelect questionType={questionType} lookupType={lookupType} setQuestionType={setQuestionType} setLookupType={setLookupType} errors={errors} resetTrigger={resetTrigger} />
                                 <FormControlLabel control={<Checkbox checked={isMandatory === "T"} onChange={(e) => setIsMandatory(e.target.checked ? "T" : "F")} />}
-                                    label="Is Mandatory?"
-                                />
+                                    label="Is Mandatory?" />
                                 <Box textAlign="right">
                                     {editQuestionId &&
                                         (<Button variant="outlined" color="success" onClick={resetValues} sx={{ mr: 1 }}>
@@ -182,14 +192,14 @@ function AdminForm() {
                                 <Box display="flex" alignItems="center" justifyContent="space-between">
                                     <Box>
                                         <Typography variant="body1">
-                                            {q.IS_MANDATORY === "T" && <span className='text-danger'>*</span>}{q.QUESTION}
+                                            {q.IS_MANDATORY === "T" && <span className='text-danger'>*</span>} {q.QUESTION}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            <strong>Type:</strong> {q.ANSWER_TYPE}
+                                            <strong>Question Type:</strong> {q.ANSWER_TYPE}
                                         </Typography>
                                         {q.LOOKUP && (
                                             <Typography variant="body2" color="text.secondary">
-                                                <strong>Lookup:</strong> {q.LOOKUP || 'N/A'}
+                                                <strong>Lookup Type:</strong> {q.LOOKUP || 'N/A'}
                                             </Typography>
                                         )}
                                     </Box>
@@ -201,7 +211,7 @@ function AdminForm() {
                                             <DeleteIcon />
                                         </IconButton>
                                         {isDeleteConfirm && (
-                                            <AlertDialogModal open={isDeleteConfirm} onClose={() => {setDeleteConfirm(false); setDeleteQuestionId('')}} onConfirm={() => deleteQuestion()} />
+                                            <AlertDialogModal open={isDeleteConfirm} onClose={() => { setDeleteConfirm(false); setDeleteQuestionId('') }} onConfirm={() => deleteQuestion()} />
                                         )}
                                     </Box>
 
