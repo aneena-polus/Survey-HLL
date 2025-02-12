@@ -18,7 +18,7 @@ const publishSurvey = async (req, res) => {
           return res.status(404).json({ error: 'Survey not found' });
         }
 
-        const statusMessage = status === 1 ? 'Survey published successfully' : 'Survey inActivated';
+        const statusMessage = status === "1" ? 'Survey published successfully' : 'Survey inActivated';
   
         return res.status(200).json({ message: statusMessage });
       });
