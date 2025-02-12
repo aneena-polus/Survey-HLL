@@ -20,7 +20,7 @@ function LookupMaintenance() {
     useEffect(() => {
         getAllLookups().then((response) => {
             dispatch(getLookupData(response.data.lookupValues));
-        });
+        }).catch((err) => console.log(err));
     }, [dispatch]);
 
     const handleAddLookup = () => {
@@ -44,7 +44,7 @@ function LookupMaintenance() {
             ToastMessage('Lookup Deleted Successfully!');
             dispatch(deleteLookupData(deleteLookupId));
             setDeleteLookupId('');
-        })
+        }).catch((err) => console.log(err));
     };
 
     const handleCloseModal = () => {
@@ -58,7 +58,7 @@ function LookupMaintenance() {
                 ToastMessage(`Lookup Added Successfully!`);
                 dispatch(addLookupData({ lookupId: res.data.lookupId, key: res.data.lookup }));
                 setLookupModalOpen(false);
-            });
+            }).catch((err) => console.log(err));
         else
             ToastMessage(`Lookup Updated Successfully!`);
     };
@@ -85,12 +85,12 @@ function LookupMaintenance() {
                                 <TableCell>{index + 1}</TableCell>
                                 <TableCell sx={{ flexGrow: 1 }}>{row.key}</TableCell>
                                 <TableCell>
-                                    <Tooltip title="Edit">
+                                    <Tooltip title="Edit" disableInteractive>
                                         <IconButton color="primary" onClick={() => handleEditLookup(row)}>
                                             <EditIcon />
                                         </IconButton>
                                     </Tooltip>
-                                    <Tooltip title="Delete">
+                                    <Tooltip title="Delete" disableInteractive>
                                         <IconButton color="error" size="small" onClick={() => openDeleteConfirm(row.lookupId)} >
                                             <DeleteIcon />
                                         </IconButton>

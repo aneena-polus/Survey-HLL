@@ -20,10 +20,11 @@ const useSurveyForm = () => {
             .then((response) => {
                 setFormData(response.data);
                 const initialResponses = response.data.map((item) => ({
-                    questionId: null,
+                    questionId: item.ID,
                     answer: item.TYPE == 'Checkbox'
                         ? (item.ANSWER ? item.ANSWER.split(',').map((answer) => answer.trim()) : [])
-                        : item.ANSWER
+                        : item.ANSWER,
+                    actionType: item.ANSWER ? 'U' : 'I'
                 }));
                 setResponseData(initialResponses);
             })
@@ -33,9 +34,9 @@ const useSurveyForm = () => {
             });
     }, [data.survey_details.ID, userData.userId, navigate]);
 
-    const handleResponseChange = (index, questionId, answer) => {
+    const handleResponseChange = (index, questionId, answer, actionType) => {
         const updatedResponses = [...responseData];
-        updatedResponses[index] = { questionId, answer };
+        updatedResponses[index] = { questionId, answer, actionType };
         setResponseData(updatedResponses);
     };
 

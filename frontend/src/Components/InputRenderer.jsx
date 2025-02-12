@@ -9,9 +9,7 @@ const InputRenderer = ({ question, index, response, onChange, isInvalid, data })
                 ? [...(Array.isArray(response.answer) ? response.answer : []), value]
                 : (Array.isArray(response.answer) ? response.answer : []).filter((item) => item != value)
             : value;
-        console.log(newValue);
-        
-        onChange(index, question.ID, newValue);
+        onChange(index, question.ID, newValue, response.actionType);
     };
 
     return (

@@ -13,7 +13,6 @@ function Login() {
         setUserData({ username: '', password: '' });
     }, [setUserData]);
 
-
     const handleInputChange = (e) => {
         const { id, value } = e.target;
         setUserData((prevState) => ({

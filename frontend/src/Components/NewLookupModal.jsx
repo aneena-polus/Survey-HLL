@@ -25,7 +25,7 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
             setLookupType(editData.key);
             getAllLookupOptions(editData.lookupId).then((res) => {
                 dispatch(getLookupOptions(res.data.lookups[0].options));
-            });
+            }).catch((err) => console.log(err));
         } else {
             setLookupType("");
         }
@@ -49,7 +49,7 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
         updateLookupTitle(reqObj).then((res) => {
             dispatch(editLookupTitle({ lookupId: res.data.lookupId, key: res.data.key }));
             ToastMessage('Title Updated Successfully!');
-        })
+        }).catch((err) => console.log(err));
     };
 
     const handleOptionChange = (optionId, value) => {
@@ -107,7 +107,7 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
             ToastMessage('Option Updated Successfully!');
             setEditIndex(null);
             setPrevOptionText("");
-        });
+        }).catch((err) => console.log(err));
     };
 
     const handleAddOption = () => {
@@ -116,9 +116,8 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
             if (modalRef.current) {
                 modalRef.current.scrollTo({ top: modalRef.current.scrollHeight, behavior: 'smooth' });
             }
-        }, 100); 
+        }, 100);
     };
-    
 
     const handleSaveAdd = (option) => {
         const reqObj = {
@@ -127,7 +126,8 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
         }
         addLookupOption(reqObj).then((res) => {
             dispatch(saveAddLookupOptions({ optionId: option.optionId, options: res.data.newOptionData }));
-        })
+            ToastMessage('Option Added Successfully!');
+        }).catch((err) => console.log(err));
     };
 
     const handleRemoveOption = (optionId, isNew) => {
@@ -135,7 +135,7 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
             deleteLookupOption(optionId).then(() => {
                 dispatch(deleteLookupOptions(optionId));
                 ToastMessage('Option Deleted Successfully!');
-            });
+            }).catch((err) => console.log(err));
         }
         else {
             dispatch(deleteLookupOptions(optionId));
@@ -145,14 +145,11 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
     return (
         <Modal open={open} onClose={handleClose}>
             <Box ref={modalRef} className="modal-container scrollable-modal" sx={{ width: { xs: "90%", sm: "80%", md: "50%", lg: "40%" } }}>
-                <IconButton
-                    onClick={handleClose}
-                    sx={{ position: "absolute", top: 8, right: 8 }}
-                >
+                <IconButton onClick={handleClose} sx={{position: "absolute"}} className="close-btn">
                     <CloseIcon />
                 </IconButton>
                 <Typography variant="h6" className="mb-3">{editData ? "Edit Lookup" : "Add Lookup"}</Typography>
-                <InputLabel className="fw-bold mb-0">Lookup Title</InputLabel>
+                <InputLabel className="fw-bold mb-1">Lookup Title</InputLabel>
                 <div className="d-flex align-items-center justify-content-center mb-3">
                     <TextField
                         fullWidth margin="normal"
@@ -160,23 +157,22 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
                         value={lookupType}
                         onChange={handleLookupTypeChange}
                         error={Boolean(errors.lookupType)}
-                        helperText={errors.lookupType || ""}
-                    />
-                    <Tooltip title="Save">
+                        helperText={errors.lookupType || ""} />
+                    {editData && <Tooltip title="Save" disableInteractive>
                         <IconButton color="primary" onClick={handleUpdateTitle}>
                             <SaveIcon />
                         </IconButton>
-                    </Tooltip>
+                    </Tooltip>}
                 </div>
                 <div className="d-flex mt-4 align-items-center justify-content-between">
                     <InputLabel className="fw-bold mb-0">
                         Lookup Options
-                        </InputLabel>
-                        <Tooltip title="Add Option">
-                            <IconButton color="primary" onClick={handleAddOption}>
-                                <AddBoxIcon />
-                            </IconButton>
-                        </Tooltip>
+                    </InputLabel>
+                    <Tooltip title="Add Option" disableInteractive>
+                        <IconButton color="primary" onClick={handleAddOption}>
+                            <AddBoxIcon />
+                        </IconButton>
+                    </Tooltip>
                 </div>
                 {lookupOptions.map((option) => (
                     <div key={option.optionId} className="d-flex align-items-center">
@@ -184,16 +180,15 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
                             fullWidth margin="normal"
                             value={option.optionText}
                             className="mt-0 textfield-custom"
-                            onChange={(e) => handleOptionChange(option.optionId, e.target.value)}
-                        />
+                            onChange={(e) => handleOptionChange(option.optionId, e.target.value)} />
                         {editIndex === option.optionId ? (
                             <>
-                                <Tooltip title="Clear">
+                                <Tooltip title="Clear" disableInteractive>
                                     <IconButton color="primary" onClick={() => handleCancelEdit(option.optionId)}>
                                         <CloseIcon />
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip title="Save">
+                                <Tooltip title="Save" disableInteractive>
                                     <IconButton color="primary" onClick={() => handleSaveEdit(option.optionId)}>
                                         <SaveIcon />
                                     </IconButton>
@@ -202,21 +197,21 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
                         ) : (
                             <>
                                 {!option.isNew && (
-                                    <Tooltip title="Edit">
+                                    <Tooltip title="Edit" disableInteractive>
                                         <IconButton color="primary" onClick={() => handleEdit(option.optionId)}>
                                             <ModeEditIcon />
                                         </IconButton>
                                     </Tooltip>
                                 )}
                                 {(lookupOptions.filter(opt => !opt.isNew).length > 2 || option.isNew) && (
-                                    <Tooltip title="Delete">
+                                    <Tooltip title="Delete" disableInteractive>
                                         <IconButton color="error" onClick={() => handleRemoveOption(option.optionId, option.isNew)}>
                                             <RemoveIcon />
                                         </IconButton>
                                     </Tooltip>
                                 )}
                                 {editData && option.isNew && (
-                                    <Tooltip title="Save">
+                                    <Tooltip title="Save" disableInteractive>
                                         <IconButton color="primary" onClick={() => handleSaveAdd(option)}>
                                             <SaveIcon />
                                         </IconButton>
@@ -228,10 +223,10 @@ const NewLookupModal = ({ open, onClose, onSave, editData }) => {
                 ))}
                 {errors.lookupValues && <div className="text-danger mt-2">{errors.lookupValues}</div>}
                 <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 3 }}>
-                    {!editData && (<><Button variant="outlined" onClick={handleClose}>Cancel</Button>
-                        <Button variant="contained" onClick={handleSave}>
-                            Save
-                        </Button></>)}
+                    {!editData && (<>
+                        <Button variant="outlined" onClick={handleClose}>Cancel</Button>
+                        <Button variant="contained" onClick={handleSave}>Save</Button>
+                    </>)}
                 </Stack>
             </Box>
         </Modal>

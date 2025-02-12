@@ -14,6 +14,7 @@ import AlertDialogModal from '../common/Confirmation';
 function AdminForm() {
     const { userData } = useContext(AuthContext);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const questions = useSelector(state => state.questions.questions || []);
     const [surveyDetails, setSurveyDetails] = useState([]);
     const [title, setTitle] = useState('');
@@ -28,7 +29,6 @@ function AdminForm() {
     const [errors, setErrors] = useState({});
     const [isDeleteConfirm, setDeleteConfirm] = useState(false);
     const [deleteQuestionId, setDeleteQuestionId] = useState('');
-    const navigate = useNavigate();
 
     const saveSurveyTitle = () => {
         const saveTitleObj = {
@@ -43,7 +43,7 @@ function AdminForm() {
         saveSurveyTitles(saveTitleObj).then((response) => {
             setSurveyDetails(response.data.surveyFormId);
             setErrors({});
-        });
+        }).catch((err) => console.log(err));
         dispatch(resetQuestions());
         setNextFlag(1);
     };
@@ -52,7 +52,7 @@ function AdminForm() {
         deleteSurveyQuestion(deleteQuestionId).then(() => {
             setDeleteConfirm(false);
             dispatch(deleteQuestions(deleteQuestionId));
-        });
+        }).catch((err) => console.log(err));
         setDeleteQuestionId('');
         ToastMessage('Question Deleted successfully!');
     };
@@ -178,7 +178,7 @@ function AdminForm() {
                                     label="Is Mandatory?" />
                                 <Box textAlign="right">
                                     {editQuestionId &&
-                                        (<Button variant="outlined" color="success" onClick={resetValues} sx={{ mr: 1 }}>
+                                        (<Button variant="outlined" color="success" onClick={resetValues} className='mr-1'>
                                             Cancel
                                         </Button>)}
                                     <Button variant="contained" color="success" onClick={handleAddQuestion}>
@@ -214,7 +214,6 @@ function AdminForm() {
                                             <AlertDialogModal open={isDeleteConfirm} onClose={() => { setDeleteConfirm(false); setDeleteQuestionId('') }} onConfirm={() => deleteQuestion()} />
                                         )}
                                     </Box>
-
                                 </Box>
                             </Card>
                         ))}
