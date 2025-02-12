@@ -54,7 +54,6 @@ export const getSurveyList = async (req, res) => {
 
 
 export const getSurveyData = async (req, res) => {
-
     const { id, user_id } = req.body;
     const checkForResponse = `SELECT * FROM survey_response WHERE survey_id = ? AND update_person = ?`;
   
