@@ -16,7 +16,7 @@ const Navbar = () => {
             localStorage.clear();
             dispatch(logout());
             navigate('/');
-        });
+        }).catch((err) => console.log(err));
     };
 
     return (

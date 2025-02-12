@@ -15,17 +15,21 @@ const UserForm = () => {
         const invalidIndexes = validateMandatoryFields(formData, responseData);
         if (invalidIndexes.length > 0) {
             setInvalidFields(invalidIndexes);
-            return; 
+            return;
         }
         setInvalidFields([]);
-        const filteredResponses = responseData.filter(response => response.questionId !== null);
+        const filteredResponses = responseData.filter(response => 
+            response.questionId !== null &&
+            response.hasOwnProperty("answer") &&
+            (Array.isArray(response.answer) ? response.answer.length !== 0 : response.answer !== null && response.answer !== undefined)
+        );
         const response = {
             surveyId: data.survey_details.ID,
-            answers: filteredResponses
+            answers: filteredResponses,
         }     
         submitResponse(response).then(()=>{
             navigate('/surveylist');
-        })
+        }).catch((err) => console.log(err));
     };
 
     const validateMandatoryFields = (questions, responses) => {
@@ -42,7 +46,6 @@ const UserForm = () => {
             return acc;
         }, []);
     };
-    
 
     return (
         <Container maxWidth="lg" className='my-5'>
@@ -53,7 +56,7 @@ const UserForm = () => {
                 <Box component="form" onSubmit={submitSurveyData}>
                     {formData.map((question, index) => (
                         <InputRenderer 
-                            key={question.id}
+                            key={index}
                             question={question}
                             data = {data}
                             index={index}

@@ -13,7 +13,7 @@ function ChoiceSelect({ questionType, lookupType, setQuestionType, setLookupType
         getOptionTypes().then((response) => {
             setOptionTypes(response.data.answerTypes);
             setLookupTypes(response.data.lookupValues);
-        });
+        }).catch((err) => console.log(err));
     }, []);
 
     useEffect(() => {

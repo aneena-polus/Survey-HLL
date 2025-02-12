@@ -101,7 +101,7 @@ const QuestionList = () => {
             editSurveyQuestion(editedQuestion.QUESTION_ID, formattedQuestion).then((response) => {
                 dispatch(editQuestions(response.data.updatedData));
                 ToastMessage('Question Updated Successfully!');
-            })
+            }).catch((err) => console.log(err));
         }
         else {
             formattedQuestion = {
@@ -113,7 +113,7 @@ const QuestionList = () => {
             };
             saveSurveyQuestion(formattedQuestion).then((response) => {
                 dispatch(addQuestion(response.data.data[0]));
-            });
+            }).catch((err) => console.log(err));
             ToastMessage('Question Added Successfully!');
         }
         setEditedQuestion({});
@@ -135,7 +135,7 @@ const QuestionList = () => {
             dispatch(deleteQuestions(deleteQuestionId));
             setDeleteConfirm(false);
             ToastMessage('Question Deleted Successfully!');
-        });
+        }).catch((err) => console.log(err));
     };
 
     const editTitle = () => {
@@ -151,7 +151,7 @@ const QuestionList = () => {
         editTitleSave(response).then((res) => {
             dispatch(editTitleValue(res.data));
             setEditFlag(false);
-        });
+        }).catch((err) => console.log(err));
     };
 
     const saveLookupValues = (lookupObj) => {
@@ -204,9 +204,6 @@ const QuestionList = () => {
             <Box display="flex" alignItems="center">
                 <Button variant="contained" color="primary" className="mb-3" onClick={handleAddClick}>
                     Add Question
-                </Button>
-                <Button variant="contained" color="primary" className="mx-3 mb-3" onClick={handleAddLookup}>
-                    Add Lookup
                 </Button>
             </Box>
             <Stack spacing={2}>
